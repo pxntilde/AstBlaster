@@ -9,5 +9,5 @@ namespace AstBlaster
     public class Game : Node
     {
         
-    } 
+    }
 }
