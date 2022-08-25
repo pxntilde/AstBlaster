@@ -22,7 +22,14 @@ namespace AstBlaster.Geo
         /// <summary>
         /// Number of sides/vertices
         /// </summary>
-        private Int32 Count => Vertices.Count;
+        public Int32 Count => Vertices.Count;
+
+        /// <summary>
+        /// Polygon area in square units
+        /// </summary>
+        public Single Area { get; private set; }
+
+        public Vector2 Centroid { get; private set; }
         
         /// <summary>
         /// Creates a new instance of a <see cref="Polygon"/> from a list of vertices
@@ -33,11 +40,14 @@ namespace AstBlaster.Geo
         /// <exception cref="ArgumentOutOfRangeError">Too few vertices</exception>
         public Polygon(in List<Vector2> vertices, Boolean isConvex = false, Boolean isCounterClockwise = false)
         {
-            var closed = vertices.First() == vertices.Last();
-            if (vertices.Count < (closed is true ? 4 : 3)) throw new ArgumentOutOfRangeError(nameof(vertices), "Too few vertices");
+            if (vertices.Count < 3) throw new ArgumentOutOfRangeError(nameof(vertices), "Too few vertices");
             var hull = isConvex ? vertices : Geometry.ConvexHull2d(vertices.ToArray()).ToList();
-            if (isCounterClockwise) hull.Reverse();
+            var closed = vertices.First() == vertices.Last();
+            if (closed is true && hull.Count < 4) throw new ArgumentOutOfRangeError(nameof(vertices), "Too few vertices");
+            if (isCounterClockwise is false) hull.Reverse();
             Vertices = closed is true ? hull.Take(hull.Count - 1).ToList() : hull;
+            Area = CalculateArea();
+            Centroid = CalculateCentroid();
         }
 
         #region Getters
@@ -134,12 +144,100 @@ namespace AstBlaster.Geo
         #endregion
 
         #region Setters
+        /// <summary>
+        /// Scales the polygon by <paramref name="amount"/>
+        /// </summary>
+        /// <param name="amount"></param>
+        /// <exception cref="ArgumentOutOfRangeError">Scale must be positive and non-zero</exception>
         public void ScaleBy(Single amount)
         {
+            if (amount is <= 0) throw new ArgumentOutOfRangeError(nameof(amount), "Scale must be positive and non-zero");
             for (var v = 0; v < Count; v++)
             {
                 Vertices[v] *= amount;
             }
+            Area = Area * amount * amount;
+            Centroid = CalculateCentroid();
+        }
+        #endregion
+
+        #region Private
+        /// <summary>
+        /// Scales polygon so the furthest vertex is on a unit circle centered on the polygon's centroid
+        /// </summary>
+        public void Normalize()
+        {
+            var center = Centroid;
+
+            for(var i = 0; i < Count; i++)
+            {
+                Vertices[i] -= center;
+            }
+
+            var max = 0f;
+            foreach(var vertex in Vertices)
+            {
+                var ls = vertex.Length();
+                if (ls > max)
+                {
+                    max = ls;
+                }
+            }
+
+            for (var i = 0; i < Count; i++)
+            {
+                Vertices[i] = Vertices[i] / max + center;
+            }
+
+            GD.Print(Vertices.Max(v => v.DistanceTo(Centroid)));
+        }
+        
+        /// <summary>
+        /// Centers the polygon on the polygon's centroid
+        /// </summary>
+        public void Center()
+        {
+            var centroid = Centroid;
+
+            for (var index = 0; index < Count; index++)
+            {
+                Vertices[index] -= centroid;
+            }
+            
+            Centroid -= centroid;
+        }
+
+        /// <summary>
+        /// Calculates the polygon's centroid
+        /// </summary>
+        /// <returns>Location of centroid</returns>
+        private Vector2 CalculateCentroid()
+        {
+            var sum = Vector2.Zero;
+
+            for (var index = 0; index < Count; index++)
+            {
+                var v1 = this[index];
+                var v2 = this[index + 1];
+                sum += (v1 + v2) * (v1.x * v2.y - v2.x * v1.y);
+            }
+
+            return sum / (6f * Area);
+        }
+
+        /// <summary>
+        /// Calculates the area of the polygon
+        /// </summary>
+        private Single CalculateArea()
+        {
+            var area = 0f;
+
+            for (var i = 0; i < Count; i++)
+            {
+                area += (this[i + 1].x - this[i].x) * (this[i + 1].y + this[i].y);
+            }
+
+            return Mathf.Abs(area) / 2f;
         }
         #endregion
 
