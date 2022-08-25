@@ -24,10 +24,25 @@ namespace AstBlaster
         [Export]
         public Rect2 Bounds { get; private set; } = new(-1f * DefaultSize / 2f, DefaultSize);
 
+        ///// <summary>
+        ///// ENTER TREE
+        ///// </summary>
+        //public override void _EnterTree()
+        //{
+        //    if (Instance is not null)
+        //    {
+        //        GD.PrintErr($"{this} {Name} :: Tried to add second {nameof(Game)} instance");
+        //    }
+        //    else
+        //    {
+        //        Instance = this;
+        //    }
+        //}
+
         /// <summary>
-        /// ENTER TREE
+        /// READY
         /// </summary>
-        public override void _EnterTree()
+        public Game()
         {
             if (Instance is not null)
             {
