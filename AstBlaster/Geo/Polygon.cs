@@ -188,8 +188,6 @@ namespace AstBlaster.Geo
             {
                 Vertices[i] = Vertices[i] / max + center;
             }
-
-            GD.Print(Vertices.Max(v => v.DistanceTo(Centroid)));
         }
         
         /// <summary>

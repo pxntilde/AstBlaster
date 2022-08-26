@@ -30,4 +30,17 @@ namespace AstBlaster.Utils.Exceptions
             GD.PrintErr($"{argument} {message}");
         }
     }
+
+    public class MisparentError : InvalidCastException
+    {
+        public MisparentError(String message) : base(message)
+        {
+            GD.PrintErr(message);
+        }
+
+        public MisparentError(String expected, String actual, String message = "") : base($"Expected {expected}, got {actual}. {message}")
+        {
+            GD.PrintErr($"Expected {expected}, got {actual}. {message}");
+        }
+    }
 }
