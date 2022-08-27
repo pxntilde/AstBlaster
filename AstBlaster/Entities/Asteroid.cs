@@ -8,18 +8,37 @@ using System.Threading.Tasks;
 
 namespace AstBlaster.Entities
 {
+    /// <summary>
+    /// A randomly generated polygon based physics body
+    /// </summary>
     public class Asteroid : WrappingBody, IDestructable
     {
+        /// <summary>
+        /// Asteroid polygon
+        /// </summary>
         private Polygon Polygon;
+
+        /// <summary>
+        /// Damage per polygon side
+        /// </summary>
         private Dictionary<Int32, Single> Damage;
+
+        /// <summary>
+        /// Collision shape owner ID
+        /// </summary>
         private UInt32 OwnerID;
+
+        /// <summary>
+        /// Polyong cached as a shape for drawing
+        /// </summary>
         private Vector2[] CachedShape;
 
         #region Node
+
         /// <summary>
-        /// ENTER TREE
+        /// INIT
         /// </summary>
-        public override void _EnterTree()
+        public Asteroid()
         {
             Polygon = Geo.Geo.RandomPolygon(11, 100f);
             CachedShape = Polygon.ToArray();
@@ -33,6 +52,8 @@ namespace AstBlaster.Entities
             {
                 Damage.Add(i, 0f);
             }
+
+            Mass = Polygon.Area;
         }
 
         /// <summary>

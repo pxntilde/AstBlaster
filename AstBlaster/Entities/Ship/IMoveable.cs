@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace AstBlaster.Entities.Ship
 {
+    [Obsolete]
     public interface IMoveable
     {
         /// <summary>

@@ -7,67 +7,99 @@ using System.Threading.Tasks;
 
 namespace AstBlaster.Entities.Ship
 {
+    /// <summary>
+    /// Base class for a ship
+    /// </summary>
     public abstract class Ship : WrappingBody
     {
+        protected Boolean UnlockThrust = false;
+        protected Boolean UnlockRotation = false;
 
         /// <summary>
-        /// Maximum thrust force
+        /// Maximum thrust force in 1kg pixel / s^2
         /// </summary>
         [Export]
-        public Single MaxThrust { get; private set; } = 60000f;
+        public Single Thrust { get; protected set; } = 60000f;
+
+        /// <summary>
+        /// Speed to target during locked thrust in units per second
+        /// </summary>
+        [Export]
+        public Single TargetSpeed { get; protected set; } = 500f;
 
         /// <summary>
         /// Maximum torque
         /// </summary>
         [Export]
-        public Single MaxTorque { get; private set; } = 25000f;
+        public Single Torque { get; protected set; } = 25000f;
 
-        protected Vector2 CurrentThrust = Vector2.Zero;
-        protected Single CurrentTorque = 0f;
+        /// <summary>
+        /// Target rotation speed during locked rotation in radians per second
+        /// </summary>
+        [Export]
+        public Single TargetRotation { get; protected set; } = 100f;
 
         /// <summary>
         /// Damps forward velocity
         /// </summary>
-        protected void DampForward()
-        {
-            CurrentThrust = (-1f * LinearVelocity * MaxThrust).LimitLength(MaxThrust);
-        }
+        protected virtual void DampMovement() => AddCentralForce((-1f * LinearVelocity * Thrust).LimitLength(Thrust));
 
         /// <summary>
         /// Damps rotation velocity
         /// </summary>
-        protected void DampRotation()
-        {
-            CurrentTorque = Mathf.Clamp(MaxTorque * AngularVelocity * -1f, MaxTorque * -1f, MaxTorque);
-        }
+        protected virtual void DampRotation() => AddTorque(Mathf.Clamp(Torque * AngularVelocity * -0.9f, Torque * -1f, Torque)); 
 
         /// <summary>
         /// Applies thrust
         /// </summary>
-        protected void ApplyThrust(Single scale = 1f)
+        protected virtual void ApplyThrust(Single scale = 1f, Boolean unlocked = false)
         {
-            CurrentThrust = (CurrentThrust + Transform.x * scale * MaxThrust).LimitLength(MaxThrust);
+            if (unlocked is true)
+            {
+                AddCentralForce(Thrust * Transform.x * scale);
+            }
+            else
+            {
+                var v = LinearVelocity;
+                var t = Transform.x * scale * TargetSpeed;
+                var m = Mass;
+
+                var force = m * (t - v);
+
+                AddCentralForce(force.LimitLength(Thrust));
+            }
         }
 
         /// <summary>
         /// Applies torque
         /// </summary>
-        protected void ApplyTorque(Single scale = 1f)
+        protected virtual void ApplyTorque(Single scale = 1f, Boolean unlocked = false)
         {
-            CurrentTorque = Mathf.Clamp(CurrentTorque + MaxTorque * scale, MaxTorque * -1f, MaxTorque);
+            if (unlocked is true)
+            {
+                AddTorque(Torque * scale);
+            }
+            else
+            {
+                var v = AngularVelocity;
+                var t = TargetRotation * scale;
+                var m = Inertia;
+
+                var force = m * (t - v);
+
+                AddTorque(Mathf.Clamp(force, -Torque, Torque));
+            }
         }
 
-        public override void _PhysicsProcess(Single delta)
+        /// <summary>
+        /// INTEGRATE FORCES
+        /// </summary>
+        public override void _IntegrateForces(Physics2DDirectBodyState state)
         {
-            if (CurrentThrust != Vector2.Zero)
-            {
-                AddForce(Vector2.Zero, CurrentThrust);
-            }
+            AppliedForce = Vector2.Zero;
+            AppliedTorque = 0f;
 
-            if (CurrentTorque != 0)
-            {
-                AddTorque(CurrentTorque);
-            }
+            base._IntegrateForces(state);
         }
     }
 }

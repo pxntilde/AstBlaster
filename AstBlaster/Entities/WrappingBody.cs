@@ -22,9 +22,6 @@ namespace AstBlaster.Entities
         /// </summary>
         public override void _IntegrateForces(Physics2DDirectBodyState state)
         {
-            AppliedForce = Vector2.Zero;
-            AppliedTorque = 0f;
-
             state.Transform = RectifyPosition(state.Transform);
         }
 

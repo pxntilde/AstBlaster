@@ -29,6 +29,9 @@ namespace AstBlaster.Geo
         /// </summary>
         public Single Area { get; private set; }
 
+        /// <summary>
+        /// Center of mass
+        /// </summary>
         public Vector2 Centroid { get; private set; }
         
         /// <summary>
