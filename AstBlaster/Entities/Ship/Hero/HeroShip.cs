@@ -1,4 +1,5 @@
-﻿using Godot;
+﻿using AstBlaster.Entities.Ship.Weapons;
+using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +18,22 @@ namespace AstBlaster.Entities.Ship.Hero
         /// </summary>
         public InputData Input { protected get; set; }
 
+        private List<Weapon> Weapons = new();
+
+        /// <summary>
+        /// ENTER TREE
+        /// </summary>
+        public override void _Ready()
+        {
+            foreach (var child in GetChildren())
+            {
+                if (child is Weapon weapon)
+                {
+                    Weapons.Add(weapon);
+                }
+            }
+        }
+
         /// <summary>
         /// PHYSICS PROCESS
         /// </summary>
@@ -25,6 +42,12 @@ namespace AstBlaster.Entities.Ship.Hero
             if (Input is null) return;
             ApplyThrust(Input.Thrust, Input.UnlockThrust);
             ApplyTorque(Input.Yaw, Input.UnlockRotation);
+        }
+
+        public override void _Process(Single delta)
+        {
+            if (Input is not null)
+                Weapons.ForEach(w => w.Fire = Input.Fire);
         }
     }
 }

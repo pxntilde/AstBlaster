@@ -28,6 +28,7 @@ namespace AstBlaster.Entities.Ship.Hero
             var yaw = 0f;
             var unlockThrust = false;
             var unlockRotation = false;
+            var fire = false;
 
             if (Input.IsActionPressed("thrusters"))
             {
@@ -49,8 +50,12 @@ namespace AstBlaster.Entities.Ship.Hero
             {
                 unlockRotation = true;
             }
+            if (Input.IsActionPressed("fire_weapon"))
+            {
+                fire = true;
+            }
 
-            Ship.Input = new(thrust, yaw, unlockThrust, unlockRotation);
+            Ship.Input = new(thrust, yaw, unlockThrust, unlockRotation, fire);
         }
     }
 }

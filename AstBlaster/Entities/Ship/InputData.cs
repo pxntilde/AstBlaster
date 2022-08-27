@@ -16,6 +16,7 @@ namespace AstBlaster.Entities.Ship
         public Single Yaw;
         public Boolean UnlockThrust;
         public Boolean UnlockRotation;
+        public Boolean Fire;
 
         /// <summary>
         /// Creates a new InputData record
@@ -24,12 +25,13 @@ namespace AstBlaster.Entities.Ship
         /// <param name="yaw">Yaw amount</param>
         /// <param name="unlockThrust">Whether to unlock thrust</param>
         /// <param name="unlockRotation">Whether to unlock rotational</param>
-        public InputData(Single thrust, Single yaw, Boolean unlockThrust, Boolean unlockRotation)
+        public InputData(Single thrust, Single yaw, Boolean unlockThrust, Boolean unlockRotation, Boolean fire)
         {
             Thrust = thrust;
             Yaw = yaw;
             UnlockThrust = unlockThrust;
             UnlockRotation = unlockRotation;
+            Fire = fire;
         }
     }
 }

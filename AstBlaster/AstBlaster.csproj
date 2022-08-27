@@ -3,4 +3,7 @@
     <TargetFramework>net472</TargetFramework>
 	  <LangVersion>latestMajor</LangVersion>
   </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="MathBlaster\" />
+  </ItemGroup>
 </Project>

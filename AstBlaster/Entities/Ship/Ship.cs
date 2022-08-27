@@ -63,7 +63,6 @@ namespace AstBlaster.Entities.Ship
                 var v = LinearVelocity;
                 var t = Transform.x * scale * TargetSpeed;
                 var m = Mass;
-
                 var force = m * (t - v);
 
                 AddCentralForce(force.LimitLength(Thrust));
@@ -84,7 +83,6 @@ namespace AstBlaster.Entities.Ship
                 var v = AngularVelocity;
                 var t = TargetRotation * scale;
                 var m = Inertia;
-
                 var force = m * (t - v);
 
                 AddTorque(Mathf.Clamp(force, -Torque, Torque));

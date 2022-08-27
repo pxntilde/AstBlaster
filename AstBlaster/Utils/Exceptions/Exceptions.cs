@@ -43,4 +43,17 @@ namespace AstBlaster.Utils.Exceptions
             GD.PrintErr($"Expected {expected}, got {actual}. {message}");
         }
     }
+
+    public class InvalidTypeError : InvalidCastException
+    {
+        public InvalidTypeError(String message) : base(message)
+        {
+            GD.PrintErr(message);
+        }
+
+        public InvalidTypeError(String expected, String actual, String message) : base($"Expected {expected}, got {actual}. {message}")
+        {
+            GD.PrintErr($"Expected {expected}, got {actual}. {message}");
+        }
+    }
 }
