@@ -8,6 +8,9 @@ namespace AstBlaster
     /// </summary>
     public class Game : Node
     {
+        public static UInt64 UniqueKey => _UniqueKey++;
+        public static UInt64 _UniqueKey;
+
         /// <summary>
         /// Default place area size
         /// </summary>

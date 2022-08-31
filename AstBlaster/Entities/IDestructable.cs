@@ -1,4 +1,5 @@
-﻿using Godot;
+﻿using AstBlaster.Entities.Ship;
+using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,7 @@ namespace AstBlaster.Entities
     /// </summary>
     public interface IDestructable
     {
-
+        public void ApplyDamage(IDamager instigator, Single amount, Vector2 position);
+        public Node2D AsNode2D { get; }
     }
 }

@@ -30,10 +30,11 @@ namespace AstBlaster.Entities
         /// </summary>
         /// <param name="transform">body transform</param>
         /// <returns>Wrapped transform</returns>
-        private Transform2D RectifyPosition(Transform2D transform)
+        public static Transform2D RectifyPosition(Transform2D transform)
         {
             var position = transform.origin;
-            var bounds = Game.Bounds;
+            var bounds = Game.Instance?.Bounds ?? throw new NullReferenceException("Game has no instance");
+
 
             if (position.x > bounds.End.x)
             {

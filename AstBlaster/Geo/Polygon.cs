@@ -105,7 +105,10 @@ namespace AstBlaster.Geo
         /// <remarks>Multiple walks around the polygon are permitted</remarks>
         public List<Vector2> GetVertices(Int32 start, Int32 count, Boolean reverse = false)
         {
-            if (count is <= 0) throw new ArgumentOutOfRangeError(nameof(count), "Must be greater than 0");
+            //if (count is <= 0) throw new ArgumentOutOfRangeError(nameof(count), "Must be greater than 0");
+            //if (count is 0) return new() { this[start] };
+            while (count < 0) count += Count;
+
             List<Vector2> list = new();
             var direction = reverse is false ? 1 : -1;
             for (var i = 0; i < count; i++)
@@ -115,6 +118,13 @@ namespace AstBlaster.Geo
             }
             return list;
         }
+
+        /// <summary>
+        /// Gets the position of the vertex at <paramref name="index"/>
+        /// </summary>
+        /// <param name="index">Index of vertex</param>
+        /// <returns>Vertex position</returns>
+        public Vector2 Vertex(Int32 index) => Vertices[index % Count];
 
         /// <summary>
         /// Returns a side as a line segment between two vertices starting with <paramref name="index"/>
@@ -143,6 +153,13 @@ namespace AstBlaster.Geo
             }
             return sides;
         }
+
+        /// <summary>
+        /// Gets list of consecutive sides
+        /// </summary>
+        /// <param name="reverse">Reverse side order</param>
+        /// <returns>List of sides</returns>
+        public List<LineSegment> GetSides(Boolean reverse = false) => GetSides(0, Count, reverse);
 
         #endregion
 
@@ -241,6 +258,100 @@ namespace AstBlaster.Geo
             return Mathf.Abs(area) / 2f;
         }
         #endregion
+
+        /// <summary>
+        /// Bisects the polygon
+        /// </summary>
+        /// <param name="index">Index of side to bisect from</param>
+        /// <returns>Two polygons</returns>
+        public List<Polygon> Bisect(Int32 index)
+        {
+                    //GD.Print($"v {index}");
+            List<Polygon> polygons = new();
+
+            var from = GetSide(index);
+            var midpoint = from.Midpoint;
+            var direction = from.Direction;
+
+            // Loop from next side to previous side
+            for (var i = index + 1; i < index + Count; i++)
+            {
+                if (i == index)
+                {
+                    GD.Print($"Too far");
+                    continue;
+                }
+
+                var oppositeSide = GetSide(i);
+                //GD.Print($"Checking side {i}");
+                // Check if it is the opposite side
+                if (direction.Dot(oppositeSide.Start.DirectionTo(midpoint)) > 0f !=
+                    direction.Dot(oppositeSide.End.DirectionTo(midpoint)) > 0f)
+                {
+                    //GD.Print($"Side {i} intersects");
+
+                    var intersection = (Vector2)Geometry.LineIntersectsLine2d(oppositeSide.Start, oppositeSide.Direction, midpoint, from.Normal);
+                    
+                    List<Vector2> polyA = new();
+
+                    foreach (var aVertex in GetVertices(index + 1, i - (index + 1) + 1))
+                    {
+                        polyA.Add(aVertex);
+                       // GD.Print($"{aVertex}");
+                    }
+
+                    polyA.Add(intersection);
+                    polyA.Add(midpoint);
+                   // GD.Print($"{intersection}");
+                   // GD.Print($"{midpoint}");
+
+                    List<Vector2> polyB = new();
+
+                    foreach (var bVertex in GetVertices(i + 1, index - (i + 1) + 1))
+                    {
+                        polyB.Add(bVertex);
+                    }
+
+                    polyB.Add(midpoint);
+                    polyB.Add(intersection);
+
+                    polygons.Add(new(polyA, true, true));
+                    polygons.Add(new(polyB, true, true));
+
+                    break;
+                }
+            }
+                    //GD.Print($"^");
+
+            //if (to is null)
+            //{
+            //    GD.Print("You fucked up");
+            //    return null;
+            //}
+
+            //var startIndex = Vertices.IndexOf(from.End);
+            //var endIndex = Vertices.IndexOf(to.Start);
+            //if (endIndex < startIndex) endIndex += Count;
+
+            //List<Vector2> poly = GetVertices(startIndex, endIndex - startIndex);
+            //GD.Print($"from {Vertices.IndexOf(from.End)} {from.End} to {Vertices.IndexOf(to.Start)} {to.Start} ");
+            //poly.Insert(0, from.Midpoint);
+            //poly.Add(to.Midpoint);
+
+            //polygons.Add(new(poly, true, true));
+
+            //startIndex = Vertices.IndexOf(to.End);
+            //endIndex = Vertices.IndexOf(from.Start);
+            //if (endIndex < startIndex) endIndex += Count;
+
+            //poly = GetVertices(startIndex, endIndex);
+            //poly.Insert(0, to.Midpoint);
+            //poly.Add(from.Midpoint);
+
+            //polygons.Add(new(poly, true, true));
+
+            return polygons;
+        }
 
         #region IEnumerable
         public IEnumerator<Vector2> GetEnumerator() => Vertices.GetEnumerator();

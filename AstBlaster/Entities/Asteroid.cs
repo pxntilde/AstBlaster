@@ -1,4 +1,5 @@
-﻿using AstBlaster.Geo;
+﻿using AstBlaster.Entities.Ship;
+using AstBlaster.Geo;
 using Godot;
 using System;
 using System.Collections.Generic;
@@ -16,22 +17,22 @@ namespace AstBlaster.Entities
         /// <summary>
         /// Asteroid polygon
         /// </summary>
-        private Polygon Polygon;
+        protected Polygon Polygon;
 
         /// <summary>
         /// Damage per polygon side
         /// </summary>
-        private Dictionary<Int32, Single> Damage;
+        protected Dictionary<Int32, Single> Damage;
 
         /// <summary>
         /// Collision shape owner ID
         /// </summary>
-        private UInt32 OwnerID;
+        protected UInt32 OwnerID;
 
         /// <summary>
         /// Polyong cached as a shape for drawing
         /// </summary>
-        private Vector2[] CachedShape;
+        protected Vector2[] CachedShape;
 
         #region Node
 
@@ -40,13 +41,15 @@ namespace AstBlaster.Entities
         /// </summary>
         public Asteroid()
         {
-            Polygon = Geo.Geo.RandomPolygon(11, 100f);
+            Polygon = Geo.Geo.RandomPolygon(3, 100f);
             CachedShape = Polygon.ToArray();
+            ClearCollisionShapes();
+
             OwnerID = CreateShapeOwner(this);
             var collision = new ConvexPolygonShape2D();
             collision.Points = CachedShape;
             ShapeOwnerAddShape(OwnerID, collision);
-
+            
             Damage = new();
             for (var i = 0; i < Polygon.Count; i++)
             {
@@ -69,11 +72,74 @@ namespace AstBlaster.Entities
         /// </summary>
         public override void _Draw()
         {
-            //DrawCircle(Vector2.Zero, 100f, Colors.Bisque);
             DrawColoredPolygon(CachedShape, Colors.SaddleBrown, null, null, null, true);
-            //DrawCircle(Vector2.Zero, 1f, Colors.White);
-            //DrawCircle(Polygon.Centroid, 2f, Colors.Pink);
         }
         #endregion
+
+        protected void ClearCollisionShapes()
+        {
+            var owners = GetShapeOwners();
+            for (var i = 0; i < owners.Count; i++)
+            {
+                ShapeOwnerClearShapes((UInt32)(Int32)owners[i]);
+            }
+        }
+
+        public override void _IntegrateForces(Physics2DDirectBodyState state)
+        {
+            AppliedForce = Vector2.Zero;
+            AppliedTorque = 0f;
+
+            base._IntegrateForces(state);
+        }
+
+        public Node2D AsNode2D => this;
+
+        public virtual void ApplyDamage(IDamager instigator, Single amount, Vector2 position)//, Vector2 Direction)
+        {
+            position = ToLocal(position);
+            Int32 targetIndex = 0;
+            Single targetDistaceSquared = Single.PositiveInfinity;
+            var sides = Polygon.GetSides();
+
+            for (var i = 0; i < sides.Count; i++)
+            {
+                var distance = position.DistanceSquaredTo(sides[i].Midpoint);
+                if (distance < targetDistaceSquared)
+                {
+                    targetDistaceSquared = distance;
+                    targetIndex = i;
+                }
+            }
+
+            Damage[targetIndex] = amount;
+
+            // temporary
+            var game = Game.Instance;
+            var polys = Polygon.Bisect(targetIndex);
+
+            if (polys.Count > 0)
+            {
+                var aster = new NonrandomAsteroid();
+               // GD.Print($"Creating {aster}");
+                aster.Create(polys[0]);
+               // GD.Print($"Created {aster}");
+                game.AddChild(aster);
+                aster.GlobalTransform = GlobalTransform;
+                aster.AddCentralForce(GlobalPosition.DirectionTo(aster.GlobalPosition) * LinearVelocity.Length() * Mass);
+
+                aster = new NonrandomAsteroid();
+                aster.Create(polys[1]);
+                game.AddChild(aster);
+                aster.GlobalTransform = GlobalTransform;
+                aster.AddCentralForce(GlobalPosition.DirectionTo(aster.GlobalPosition) * LinearVelocity.Length() * Mass);
+
+                QueueFree();
+            }
+            else
+            {
+                GD.Print($"Failed");
+            }
+        }
     }
 }

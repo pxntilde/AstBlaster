@@ -1,0 +1,5 @@
+[gd_scene format=2]
+
+[node name="RayCast2D" type="RayCast2D"]
+cast_to = Vector2( 1920, 0 )
+collision_mask = 4

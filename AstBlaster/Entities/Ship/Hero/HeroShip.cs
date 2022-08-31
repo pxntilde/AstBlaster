@@ -18,7 +18,7 @@ namespace AstBlaster.Entities.Ship.Hero
         /// </summary>
         public InputData Input { protected get; set; }
 
-        private List<Weapon> Weapons = new();
+        private List<IWeapon> Weapons = new();
 
         /// <summary>
         /// ENTER TREE
@@ -27,7 +27,7 @@ namespace AstBlaster.Entities.Ship.Hero
         {
             foreach (var child in GetChildren())
             {
-                if (child is Weapon weapon)
+                if (child is IWeapon weapon)
                 {
                     Weapons.Add(weapon);
                 }
@@ -47,7 +47,7 @@ namespace AstBlaster.Entities.Ship.Hero
         public override void _Process(Single delta)
         {
             if (Input is not null)
-                Weapons.ForEach(w => w.Fire = Input.Fire);
+                Weapons.ForEach(w => w.Firing = Input.Fire);
         }
     }
 }

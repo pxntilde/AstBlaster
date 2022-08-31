@@ -11,6 +11,7 @@ namespace AstBlaster.Entities.Ship.Hero
     /// <summary>
     /// Human-driven movement controller
     /// </summary>
+    [Obsolete]
     public class PlayerMovementController : Controller
     {
         public IMoveable Hero => _Hero ??= GetParentOrNull<IMoveable>() ?? throw new MisparentError(nameof(IMoveable), GetParent().GetType().ToString());
