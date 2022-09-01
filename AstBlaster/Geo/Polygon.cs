@@ -210,20 +210,20 @@ namespace AstBlaster.Geo
             }
         }
         
-        /// <summary>
-        /// Centers the polygon on the polygon's centroid
-        /// </summary>
-        public void Center()
-        {
-            var centroid = Centroid;
+        ///// <summary>
+        ///// Centers the polygon on the polygon's centroid
+        ///// </summary>
+        //public void Center()
+        //{
+        //    var centroid = Centroid;
 
-            for (var index = 0; index < Count; index++)
-            {
-                Vertices[index] -= centroid;
-            }
+        //    for (var index = 0; index < Count; index++)
+        //    {
+        //        Vertices[index] -= centroid;
+        //    }
             
-            Centroid -= centroid;
-        }
+        //    Centroid -= centroid;
+        //}
 
         /// <summary>
         /// Calculates the polygon's centroid
@@ -258,6 +258,21 @@ namespace AstBlaster.Geo
             return Mathf.Abs(area) / 2f;
         }
         #endregion
+
+        /// <summary>
+        /// Centers the polygon on the centroid
+        /// </summary>
+        /// <returns>Applied offset</returns>
+        public Vector2 Center()
+        {
+            var offset = -1f * Centroid;
+            for(var index = 0; index < Count; index++)
+            {
+                Vertices[index] += offset;
+            }
+            Centroid = Vector2.Zero;
+            return offset;
+        }
 
         /// <summary>
         /// Bisects the polygon

@@ -41,14 +41,9 @@ namespace AstBlaster.Entities
         /// </summary>
         public Asteroid()
         {
-            Polygon = Geo.Geo.RandomPolygon(3, 100f);
+            Polygon = Geo.Geo.RandomPolygon(13, 200f);
             CachedShape = Polygon.ToArray();
-            ClearCollisionShapes();
-
-            OwnerID = CreateShapeOwner(this);
-            var collision = new ConvexPolygonShape2D();
-            collision.Points = CachedShape;
-            ShapeOwnerAddShape(OwnerID, collision);
+            AssignCollision();
             
             Damage = new();
             for (var i = 0; i < Polygon.Count; i++)
@@ -72,9 +67,20 @@ namespace AstBlaster.Entities
         /// </summary>
         public override void _Draw()
         {
-            DrawColoredPolygon(CachedShape, Colors.SaddleBrown, null, null, null, true);
+            DrawColoredPolygon(CachedShape, Colors.SaddleBrown, null, null, null, true); 
+            //DrawCircle(Polygon.Centroid, 3f, Colors.Green);
+            //DrawCircle(Vector2.Zero, 2f, Colors.Red);
         }
         #endregion
+
+        protected void AssignCollision()
+        {
+            ClearCollisionShapes();
+            OwnerID = CreateShapeOwner(this);
+            var collision = new ConvexPolygonShape2D();
+            collision.Points = CachedShape;
+            ShapeOwnerAddShape(OwnerID, collision);
+        }
 
         protected void ClearCollisionShapes()
         {
@@ -83,6 +89,20 @@ namespace AstBlaster.Entities
             {
                 ShapeOwnerClearShapes((UInt32)(Int32)owners[i]);
             }
+        }
+
+        /// <summary>
+        /// Moves center of mass to origin
+        /// </summary>
+        public void Recenter(Boolean keepGlobalPosition = true)
+        {
+            var offset = Polygon.Center();
+            if (keepGlobalPosition is true)
+            {
+                Position -= offset;
+            }
+            CachedShape = Polygon.ToArray();
+            AssignCollision();
         }
 
         public override void _IntegrateForces(Physics2DDirectBodyState state)
@@ -117,22 +137,26 @@ namespace AstBlaster.Entities
             // temporary
             var game = Game.Instance;
             var polys = Polygon.Bisect(targetIndex);
+            var force = (LinearVelocity.Length() + amount / 2f) * Mass;
 
             if (polys.Count > 0)
             {
+
                 var aster = new NonrandomAsteroid();
-               // GD.Print($"Creating {aster}");
                 aster.Create(polys[0]);
-               // GD.Print($"Created {aster}");
                 game.AddChild(aster);
                 aster.GlobalTransform = GlobalTransform;
-                aster.AddCentralForce(GlobalPosition.DirectionTo(aster.GlobalPosition) * LinearVelocity.Length() * Mass);
-
+                aster.Recenter();
+                aster.AddCentralForce(GlobalPosition.DirectionTo(aster.GlobalPosition) * force);
+                aster.ApplyImpulse(aster.ToLocal(ToGlobal(position)), -aster.ToLocal(ToGlobal(position)).Normalized() * amount / 200f);
+                
                 aster = new NonrandomAsteroid();
                 aster.Create(polys[1]);
                 game.AddChild(aster);
                 aster.GlobalTransform = GlobalTransform;
-                aster.AddCentralForce(GlobalPosition.DirectionTo(aster.GlobalPosition) * LinearVelocity.Length() * Mass);
+                aster.Recenter();
+                aster.ApplyImpulse(aster.ToLocal(ToGlobal(position)), -aster.ToLocal(ToGlobal(position)).Normalized() * amount / 200f);
+
 
                 QueueFree();
             }

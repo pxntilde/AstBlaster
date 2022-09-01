@@ -75,9 +75,9 @@ namespace AstBlaster.Entities.Ship.Weapons
                 throw new InvalidTypeError($"Scene is not a {nameof(IProjectile)}");
             }
             Game.AddChild(instance as Node);
-            instance.Spawn(GlobalPosition, GetParent<Node2D>().Transform.x);
-            instance.Launch(FireForce);
-            instance.Instigator = GetParentOrNull<Ship>();
+            instance.SetOrientation(GlobalPosition, GetParent<Node2D>().Transform.x);
+            instance.SetForce(FireForce);
+            instance.Instigator = GetParentOrNull<IDamager>();
         }
     }
 }

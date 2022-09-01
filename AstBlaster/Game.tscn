@@ -14,6 +14,14 @@ __meta__ = {
 position = Vector2( -621, -219 )
 continuous_cd = 2
 
+[node name="Asteroid2" parent="." instance=ExtResource( 2 )]
+position = Vector2( 348, 264 )
+continuous_cd = 2
+
+[node name="Asteroid3" parent="." instance=ExtResource( 2 )]
+position = Vector2( 264, -300 )
+continuous_cd = 2
+
 [node name="Camera2D" type="Camera2D" parent="."]
 current = true
 

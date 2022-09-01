@@ -19,16 +19,8 @@ namespace AstBlaster.Entities
         public void Create(Polygon poly)
         {
             Polygon = poly;
-            var centroid = poly.Centroid;
-            poly.Center();
-            Position += centroid;
             CachedShape = Polygon.ToArray();
-
-            ClearCollisionShapes();
-            OwnerID = CreateShapeOwner(this);
-            var collision = new ConvexPolygonShape2D();
-            collision.Points = CachedShape;
-            ShapeOwnerAddShape(OwnerID, collision);
+            AssignCollision();
 
             Damage = new();
             for (var i = 0; i < Polygon.Count; i++)
@@ -38,5 +30,14 @@ namespace AstBlaster.Entities
 
             Mass = Polygon.Area;
         }
+
+        
+
+        //public override void _Draw()
+        //{
+        //    base._Draw();
+        //    DrawCircle(Polygon.Centroid, 3f, Colors.Green);
+        //    DrawCircle(Vector2.Zero, 2f, Colors.Red);
+        //}
     }
 }
